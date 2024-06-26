@@ -1,0 +1,133 @@
+
+
+public class BinarySearchTree<E extends Comparable<E>> extends BinaryTree<E> {
+
+    public boolean add(E element) {
+        root = add(element, root);
+        return true;
+    }
+
+    private Node add(E element, Node<E> current) {
+        if (current == null) {
+            return new Node<E>(element);
+        } else if (element.compareTo(current.value) < 0) {
+            current.left = add(element, current.left);
+        } else {
+            current.right = add(element, current.right);
+        }
+        return current;
+    }
+
+    public boolean contains(E element) {
+        return contains(element, root);
+    }
+
+    private boolean contains(E element, Node<E> current) {
+        if (current == null) {
+            return false;
+        }
+        int compareResult = element.compareTo(current.value);
+        if (compareResult < 0) {
+            return contains(element, current.left);
+        } else if (compareResult > 0) {
+            return contains(element, current.right);
+        }
+        return true;
+    }
+
+    public boolean remove(E element) {
+        RemovalResult<E> result = remove(root, element);
+        if (result == null) {
+            return false;
+        } else {
+            root = result.tree;
+            return true;
+        }
+    }
+
+    private class RemovalResult<E> {
+        Node<E> node; //removed node
+        Node<E> tree; //remaining tree
+
+        RemovalResult(Node<E> n, Node<E> t) {
+            node = n;
+            tree = t;
+        }
+    }
+
+    private RemovalResult<E> remove(Node<E> current, E element) {
+        if (current == null) {
+            return null;
+        int compareResult = element.compareTo(current.value);
+
+        if (compareResult == 0) {
+            if (current.isLeafNode()) {
+                return new RemovalResult<>(current, null);
+            } else if (current.hasOneChild()) {
+                Node<E> n = current;
+                Node<E> tree = current.left != null ? current.left : current.right;
+                n.left = null;
+                n.right = null;
+                return new RemovalResult<>(n, tree);
+            } else {
+                RemovalResult<E> result = removeLargest(current.left);
+                Node<E> newRoot = result.node;
+                newRoot.left = result.tree;
+                newRoot.right = current.right;
+
+                current.left = null;
+                current.right = null;
+                return new RemovalResult<>(current, newRoot);
+            }
+        }
+
+
+        if (compareResult < 0) {
+            RemovalResult<E> result = remove(current.left, element);
+            if (result == null) {
+                return null;
+            }
+            current.left = result.tree;
+            result.tree = current;
+            return result;
+        } else {
+            RemovalResult<E> result = remove(current.right, element);
+            if (result == null) {
+                return null;
+            }
+            current.right = result.tree;
+            result.tree = current;
+            return result;
+        }
+
+
+    }
+
+    private RemovalResult<E> removeLargest(Node<E> current) {
+        if (current == null) {
+            return null;
+        } else if (current.right == null) {
+            Node<E> tree = current.left;
+            current.left = null;
+            return new RemovalResult<>(current, tree);
+        } else {
+            RemovalResult result = removeLargest(current.right);
+            current.right = result.tree;
+            result.tree = current;
+            return result;
+        }
+    }
+
+    public void printAll() {
+        printAll(root);
+    }
+
+    private void printAll(Node current) {
+        if (current != null) {
+            printAll(current.left);
+            System.out.println(current.value);
+            printAll(current.right);
+        }
+    }
+
+}
